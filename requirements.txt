@@ -2,6 +2,6 @@ streamlit
 tensorflow
 numpy
 matplotlib
-opencv-python
+opencv-python==4.5.5.64
 requests
 streamlit-lottie
