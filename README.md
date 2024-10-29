@@ -1,6 +1,5 @@
 # Interfaz-Proyecto-TFM
-
-
+Codido de desarrollo de la interfaz
 import streamlit as st
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
@@ -12,7 +11,7 @@ import cv2
 import requests
 from streamlit_lottie import st_lottie
 
-# Configuración de la interfaz
+#Configuración de la interfaz
 st.set_page_config(page_title = "Clasificador de imágenes de lesiones cutáneas", page_icon= "U+1FA7A", layout="wide" )  # Título de la interfaz
 
 #Dirección del correo
