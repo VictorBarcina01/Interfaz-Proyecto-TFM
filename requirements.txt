@@ -1,9 +1,9 @@
 streamlit
 tensorflow
 numpy
-Pillow  # Para el manejo de imágenes con Keras
-gdown  # Para la descarga de archivos desde Google Drive
-requests  # Para manejar la animación Lottie
-streamlit-lottie  # Para integrar Lottie en Streamlit
-matplotlib
-cv2
+Pillow
+gdown
+requests
+streamlit-lottie
+opencv-python  # Use opencv-python instead of cv2
+matplotlib     # Ensure this is compatible with your Python version
