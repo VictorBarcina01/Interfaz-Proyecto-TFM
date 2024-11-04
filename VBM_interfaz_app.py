@@ -9,12 +9,32 @@ import matplotlib.pyplot as plt
 import cv2
 import requests
 from streamlit_lottie import st_lottie
+import gdown
+import os
 
 # Configuración de la interfaz
 st.set_page_config(page_title = "Clasificador de imágenes de lesiones cutáneas", page_icon= "U+1FA7A", layout="wide" )  # Título de la interfaz
 
 #Dirección del correo
 dir_email= "contactomail@gmail.com"
+
+# URLs de Google Drive para descargar los modelos
+url_vgg16 = 'https://drive.google.com/file/d/1F61T6iVumbcvzOvSsBegvSi3PSztTJZR/view?usp=sharing'
+url_resnet = 'https://drive.google.com/file/d/1EkACKYU-FpVGvIapjrYi46Pgm0UOIofJ/view?usp=sharing' 
+
+# Rutas locales para guardar los modelos descargados
+model_path_vgg16 = 'Modelo_VGG16_VBM.keras'
+model_path_resnet = 'Modelo_ResNet_VBM.keras'
+# Función para descargar modelo desde Google Drive si no está localmente
+def download_model(url, model_path):
+    if not os.path.exists(model_path):
+        st.write(f"Descargando el modelo {model_path}...")
+        gdown.download(url, model_path, quiet=False)
+        st.write(f"Modelo {model_path} descargado correctamente.")
+
+# Descargar los modelos si no existen localmente
+download_model(url_vgg16, model_path_vgg16)
+download_model(url_resnet, model_path_resnet)
 
 #Lottie Animacion
 archivo_lottie ="https://lottie.host/02ae12d6-2d0d-4c07-9e83-09185ced47ff/XvZmjg3hjo.json"
@@ -69,54 +89,44 @@ with st.container():
     
 with st.container():
     
-    # Selección de modelo
-    modelo_opciones = ['Modelo_VGG16_VBM.keras', 'Modelo_ResNet50_VBM.keras']  #Modelos entrenados en el proyecto
+    
+    modelo_opciones = ['VGG16', 'ResNet']
     modelo_seleccionado = st.selectbox("Selecciona el modelo para la clasificación:", modelo_opciones)
-
-    # Cargar el modelo
-    model = load_model(modelo_seleccionado)
-
-    # Lista para almacenar las imágenes y sus resultados
-    images = []
-    predictions = []
-
-    # Subir las imágenes
-    uploaded_files = st.file_uploader("Seleccione las imágenes a predecir (Formato: JPG)", type=["jpg"], accept_multiple_files=True)
-
+    
+    # Cargar el modelo seleccionado
+    if modelo_seleccionado == 'VGG16':
+        model = load_model(model_path_vgg16)
+    else:
+        model = load_model(model_path_resnet)
+    
+    # Diccionario de clases
+    class_labels = {0: 'Melanoma', 1: 'Carcinoma basocelular', 2: 'Queratosis benigna'}
+    
+    # Subir y clasificar imágenes
+    uploaded_files = st.file_uploader("Seleccione las imágenes a predecir (Formato: JPG)", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
+    
     if uploaded_files:
         st.write("Clasificando...")
-
-        # Procesar cada imagen
-        for uploaded_file in uploaded_files:
+    
+        cols = st.columns(2)  # Para organizar visualmente las imágenes
+        for i, uploaded_file in enumerate(uploaded_files):
             # Cargar y preprocesar la imagen
             img = image.load_img(uploaded_file, target_size=(224, 224))
             img_array = image.img_to_array(img)
             img_array = np.expand_dims(img_array, axis=0)
-            img_array = preprocess_input(img_array)  # Normalización adecuada
-
+            img_array = preprocess_input(img_array)
+    
             # Realizar la predicción
             prediction = model.predict(img_array)
-
-            # Obtener la clase con mayor probabilidad
             predicted_class_idx = np.argmax(prediction, axis=1)[0]
-
-            # Crear diccionario de clases
-            class_labels = {0: 'mel', 1: 'bcc', 2: 'bkl'}  # Ejemplo de nombres de clases
-
-            # Verificar si el índice predicho está en el diccionario de etiquetas
-            if predicted_class_idx in class_labels:
-                predicted_class_label = class_labels[predicted_class_idx]
-                predicted_probability = prediction[0][predicted_class_idx] * 100  # Convertir a porcentaje
-
-                # Almacenar imagen y resultados
-                images.append((uploaded_file, predicted_class_label, predicted_probability))
-
-        # Mostrar imágenes y predicciones en dos columnas
-        cols = st.columns(2)
-        for i, (uploaded_file, predicted_class_label, predicted_probability) in enumerate(images):
-            cols[i % 2].image(uploaded_file, caption='Imagen subida.', use_column_width='auto', width=150)  # Establece un ancho fijo para las imágenes
+            predicted_class_label = class_labels.get(predicted_class_idx, "Clase desconocida")
+            predicted_probability = prediction[0][predicted_class_idx] * 100
+    
+            # Mostrar imagen y predicción
+            cols[i % 2].image(uploaded_file, caption='Imagen subida.', use_column_width=True)
             cols[i % 2].write(f"**Clase predicha:** {predicted_class_label}")
             cols[i % 2].write(f"**Confianza:** {predicted_probability:.2f}%")
+
 
 
 #Contacto 
