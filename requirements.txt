@@ -5,3 +5,4 @@ Pillow  # Para el manejo de imágenes con Keras
 gdown  # Para la descarga de archivos desde Google Drive
 requests  # Para manejar la animación Lottie
 streamlit-lottie  # Para integrar Lottie en Streamlit
+matplotlib
